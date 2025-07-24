@@ -1,0 +1,12 @@
+version: 0.0
+Resources:
+  - myApp:
+      Type: Kubernetes
+      Properties:
+        ClusterName: brain-tasks-cluster
+        Namespace: default
+        ResourceType: manifest
+        Path:
+          - deployment.yaml
+          - service.yaml
+
