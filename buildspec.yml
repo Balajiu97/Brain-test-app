@@ -6,7 +6,7 @@ phases:
       nodejs: 20
     commands:
       - echo Installing dependencies...
-      - curl -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.28.2/2023-10-18/bin/linux/amd64/kubectl
+      - curl -LO "https://amazon-eks.s3.ap-south-1.amazonaws.com/1.28.2/2023-10-18/bin/linux/amd64/kubectl"
       - chmod +x ./kubectl
       - mv ./kubectl /usr/local/bin/kubectl
       - kubectl version --client
