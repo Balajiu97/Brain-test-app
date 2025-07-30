@@ -5,17 +5,12 @@ phases:
     commands:
       - echo "🔧 Installing dependencies on Ubuntu"
       - apt-get update -y
-      - apt-get install -y curl unzip
       - echo "📥 Downloading kubectl..."
       - curl -Lo kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/latest/bin/linux/amd64/kubectl
       - chmod +x kubectl
       - mv kubectl /usr/local/bin/kubectl
       - echo "📄 Verifying kubectl binary:"
       - file /usr/local/bin/kubectl
-      - echo "📦 Installing AWS CLI v2..."
-      - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-      - unzip awscliv2.zip
-      - ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
       - echo "☸️ Updating kubeconfig"
       - aws eks update-kubeconfig --region ap-south-1 --name my-cluster-v2
 
