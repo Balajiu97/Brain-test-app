@@ -15,7 +15,7 @@ phases:
       - chmod +x kubectl
       - mv kubectl /usr/local/bin/
       - echo "✅ kubectl installed:"
-      - kubectl version --client --short
+      - kubectl version --client
       
       # AWS CLI installation
       - echo "📦 Installing AWS CLI v2..."
@@ -47,8 +47,8 @@ phases:
       - file /usr/local/bin/kubectl
       - kubectl version --client
       - echo "🚀 Deploying to Kubernetes..."
-      - kubectl apply -f deployment.yaml
-      - kubectl apply -f service.yaml
+      - kubectl apply -f deployment.yaml || { echo "❌ kubectl apply failed"; exit 1; }
+      - kubectl apply -f service.yaml || { echo "❌ kubectl apply failed"; exit 1; }
 
 artifacts:
   files:
