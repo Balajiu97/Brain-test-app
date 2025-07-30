@@ -3,24 +3,32 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo "✅ Installing kubectl..."
-      - curl -LO "https://amazon-eks.s3.us-west-2.amazonaws.com/1.28.2/2023-10-18/bin/linux/amd64/kubectl"
+      - echo "🔧 Installing dependencies on Ubuntu"
+      - apt-get update -y
+      - apt-get install -y curl unzip
+      - echo "📥 Downloading kubectl..."
+      - curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.28.2/2023-10-18/bin/linux/amd64/kubectl
       - chmod +x kubectl
       - mv kubectl /usr/local/bin/kubectl
+      - echo "📄 Verifying kubectl binary:"
       - file /usr/local/bin/kubectl
       - kubectl version --client
-      - echo "✅ Updating kubeconfig..."
+      - echo "📦 Installing AWS CLI v2..."
+      - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+      - unzip awscliv2.zip
+      - ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+      - echo "☸️ Updating kubeconfig"
       - aws eks update-kubeconfig --region ap-south-1 --name my-cluster-v2
 
   pre_build:
     commands:
-      - echo "🔧 Logging in to Amazon ECR..."
+      - echo "🔐 Logging into Amazon ECR..."
       - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 263336852738.dkr.ecr.ap-south-1.amazonaws.com
       - TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
 
   build:
     commands:
-      - echo "🚧 Building Docker image..."
+      - echo "🏗️ Building Docker image..."
       - docker build -t brain-tasks:$TAG .
       - docker tag brain-tasks:$TAG 263336852738.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:$TAG
 
@@ -28,7 +36,7 @@ phases:
     commands:
       - echo "🚀 Pushing Docker image to ECR..."
       - docker push 263336852738.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:$TAG
-      - echo "☸️ Deploying to Kubernetes..."
+      - echo "📤 Deploying to Kubernetes..."
       - kubectl apply -f deployment.yaml
       - kubectl apply -f service.yaml
 
