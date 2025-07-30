@@ -3,7 +3,7 @@ Resources:
   - myApp:
       Type: Kubernetes
       Properties:
-        ClusterName: brain-tasks-cluster
+        ClusterName: my-cluster-v2
         Namespace: default
         ResourceType: manifest
         Path:
