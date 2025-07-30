@@ -7,7 +7,7 @@ phases:
       - apt-get update -y
       - apt-get install -y curl unzip
       - echo "📥 Downloading kubectl..."
-      - curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.28.2/2023-10-18/bin/linux/amd64/kubectl
+      - curl -Lo kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.28.2/2023-10-18/bin/linux/amd64/kubectl
       - chmod +x kubectl
       - mv kubectl /usr/local/bin/kubectl
       - echo "📄 Verifying kubectl binary:"
