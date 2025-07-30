@@ -3,28 +3,33 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-       nodejs: 18
+      docker: 20
     commands:
       - echo Installing dependencies...
-      - curl -o kubectl https://amazon-eks.s3.ap-south-1.amazonaws.com/latest/bin/linux/amd64/kubectl
-      - chmod +x ./kubectl && mv ./kubectl /usr/local/bin/
-      - aws eks update-kubeconfig --region ap-south-1 --name my-cluster-v2
+      - curl -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.28.2/2023-10-18/bin/linux/amd64/kubectl
+      - chmod +x ./kubectl
+      - mv ./kubectl /usr/local/bin/kubectl
+      - kubectl version --client
+      - pip install --upgrade awscli
+
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR...
+      - echo Logging into ECR...
       - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 263336852738.dkr.ecr.ap-south-1.amazonaws.com
-      - TAG=latest
+      - TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_URI=263336852738.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:$TAG
+
   build:
     commands:
-      - docker build -t brain-tasks-app:latest .
-      - docker tag brain-tasks-app:latest 263336852738.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:latest
+      - docker build -t $IMAGE_URI .
+      - docker tag $IMAGE_URI 263336852738.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:latest
+
   post_build:
     commands:
+      - docker push $IMAGE_URI
       - docker push 263336852738.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:latest
+      - echo Updating kubeconfig...
+      - aws eks update-kubeconfig --region ap-south-1 --name my-cluster-v2
+      - echo Applying Kubernetes manifests...
       - kubectl apply -f deployment.yaml
       - kubectl apply -f service.yaml
-artifacts:
-  files:
-    - appspec.yml
-    - deployment.yaml
-    - service.yaml
