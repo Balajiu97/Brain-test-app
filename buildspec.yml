@@ -2,55 +2,31 @@ version: 0.2
 
 phases:
   install:
+    runtime-versions:
+      nodejs: 18
     commands:
-      - echo "🔧 Installing dependencies on Ubuntu"
-      - apt-get update -y
-      - apt-get install -y curl unzip ca-certificates
-      
-      # More reliable kubectl installation
-      - echo "📥 Downloading and validating kubectl..."
-      - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-      - curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
-      - echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
-      - chmod +x kubectl
-      - mv kubectl /usr/local/bin/
-      - echo "✅ kubectl installed:"
-      - kubectl version --client
-      
-      # AWS CLI installation
-      - echo "📦 Installing AWS CLI v2..."
-      - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-      - unzip awscliv2.zip
-      - ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
-      
-      # Configure kubeconfig
-      - echo "☸️ Updating kubeconfig"
+      - echo "📦 Installing dependencies..."
+      - npm install
+      - echo "📥 Installing kubectl..."
+      - curl -o kubectl https://amazon-eks.s3.ap-south-1.amazonaws.com/latest/bin/linux/amd64/kubectl
+      - chmod +x ./kubectl
+      - mv ./kubectl /usr/local/bin/
+      - echo "🔐 Updating kubeconfig for EKS..."
       - aws eks update-kubeconfig --region ap-south-1 --name my-cluster-v2
-
-  pre_build:
-    commands:
-      - echo "🔐 Logging into Amazon ECR..."
-      - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 263336852738.dkr.ecr.ap-south-1.amazonaws.com
-      - TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
 
   build:
     commands:
-      - echo "🏗️ Building Docker image..."
-      - docker build -t brain-tasks:$TAG .
-      - docker tag brain-tasks:$TAG 263336852738.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:$TAG
+      - echo "⚒️ Building Docker image..."
+      - docker build -t brain-tasks-app:latest .
+      - echo "🔁 Tagging image for ECR..."
+      - docker tag brain-tasks-app:latest 263336852738.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:latest
+      - echo "🔓 Logging in to ECR..."
+      - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 263336852738.dkr.ecr.ap-south-1.amazonaws.com
+      - echo "📤 Pushing image to ECR..."
+      - docker push 263336852738.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:latest
 
   post_build:
     commands:
-      - echo "🚀 Pushing Docker image to ECR..."
-      - docker push 263336852738.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:$TAG
-      - echo "📤 Verifying kubectl before deployment..."
-      - file /usr/local/bin/kubectl
-      - kubectl version --client
-      - echo "🚀 Deploying to Kubernetes..."
+      - echo "🚀 Deploying to EKS..."
       - kubectl apply -f deployment.yaml || { echo "❌ kubectl apply failed"; exit 1; }
-      - kubectl apply -f service.yaml || { echo "❌ kubectl apply failed"; exit 1; }
 
-artifacts:
-  files:
-    - deployment.yaml
-    - service.yaml
