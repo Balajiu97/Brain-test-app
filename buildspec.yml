@@ -5,12 +5,10 @@ phases:
     runtime-versions:
       nodejs: 20
     commands:
-      - echo Installing dependencies...
-      - curl -LO "https://amazon-eks.s3.ap-south-1.amazonaws.com/1.28.2/2023-10-18/bin/linux/amd64/kubectl"
-      - chmod +x ./kubectl
-      - mv ./kubectl /usr/local/bin/kubectl
-      - kubectl version --client
-      - pip install --upgrade awscli
+     - echo Installing dependencies...
+      - curl -o kubectl https://amazon-eks.s3.ap-south-1.amazonaws.com/latest/bin/linux/amd64/kubectl
+      - chmod +x ./kubectl && mv ./kubectl /usr/local/bin/
+      - aws eks update-kubeconfig --region ap-south-1 --name my-cluster-v2
 
   pre_build:
     commands:
