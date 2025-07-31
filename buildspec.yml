@@ -4,8 +4,8 @@ phases:
 
   build:
     commands:
-      - docker build -t brain-tasks:$TAG .
-      - docker tag brain-tasks:$TAG 263336852738.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks:$TAG
+      - docker build -t brain-tasks-app:latest .
+      - docker tag brain-tasks:$TAG 263336852738.dkr.ecr.ap-south-1.amazonaws.com/ brain-tasks-app:latest
   post_build:
     commands:
-      - docker push 263336852738.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks:$TAG
+      - docker push 263336852738.dkr.ecr.ap-south-1.amazonaws.com/ brain-tasks-app:latest
