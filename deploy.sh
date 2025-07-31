@@ -1,22 +1,12 @@
 #!/bin/bash
 
-cd /home/ubuntu/app
+set -e
 
-# Set kubeconfig path (save under ec2-user's home)
-export KUBECONFIG=/home/ubuntu/.kube/config
+echo "Logging into EKS cluster..."
+aws eks update-kubeconfig --region ap-south-1 --name my-cluster-v2
 
-# Make sure .kube directory exists for ec2-user
-mkdir -p /home/ubuntu/.kube
+echo "Installing kubectl..."
+chmod +x ./kubectl && sudo mv ./kubectl /usr/local/bin/kubectl
 
-# Set correct kubeconfig from EKS
-aws eks update-kubeconfig \
-  --region ap-south-1 \
-  --name my-cluster-v2 \
-  --kubeconfig /home/ubuntu/.kube/config
-
-# (Optional) Test connection
-kubectl cluster-info
-
-# Deploy
-kubectl apply -f deployment.yaml
-kubectl apply -f service.yaml
+echo "Applying Kubernetes manifests..."
+kubectl apply -f deployment.yaml -f service.yaml
