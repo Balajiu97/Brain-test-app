@@ -1,11 +1,22 @@
 version: 0.2
 
 phases:
-
   build:
     commands:
+      - echo "⚒️ Building Docker image..."
       - docker build -t brain-tasks-app:latest .
-      - docker tag brain-tasks:$TAG 263336852738.dkr.ecr.ap-south-1.amazonaws.com/ brain-tasks-app:latest
+      - echo "🔁 Tagging image for ECR..."
+      - docker tag brain-tasks-app:latest 263336852738.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:latest
+      - echo "🔓 Logging in to ECR..."
+      - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 263336852738.dkr.ecr.ap-south-1.amazonaws.com
+      - echo "📤 Pushing image to ECR..."
+      - docker push 263336852738.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:latest
+
   post_build:
     commands:
-      - docker push 263336852738.dkr.ecr.ap-south-1.amazonaws.com/ brain-tasks-app:latest
+      - echo "🚀 Deploying to EKS..."
+
+artifacts:
+  files:
+    - '**/*'
+
