@@ -1,12 +1,11 @@
 version: 0.0
-Resources:
-  - myApp:
-      Type: Kubernetes
-      Properties:
-        ClusterName: my-cluster-v2
-        Namespace: default
-        ResourceType: manifest
-        Path:
-          - deployment.yaml
-          - service.yaml
+os: linux
+files:
+  - source: /
+    destination: /home/ec2-user/deployment
 
+hooks:
+  AfterInstall:
+    - location: deploy.sh
+      timeout: 300
+      runas: ec2-user
