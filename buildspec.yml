@@ -1,20 +1,9 @@
-version: 0.2
-
 phases:
- 
-
+  pre_build:
+    commands:
+      - echo "Logging in to DockerHub..."
+      - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
   build:
     commands:
-      - echo "⚒️ Building Docker image..."
+      - echo "Building Docker image..."
       - docker build -t brain-tasks-app:latest .
-      - echo "🔁 Tagging image for ECR..."
-      - docker tag brain-tasks-app:latest 263336852738.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:latest
-      - echo "🔓 Logging in to ECR..."
-      - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 263336852738.dkr.ecr.ap-south-1.amazonaws.com
-      - echo "📤 Pushing image to ECR..."
-      - docker push 263336852738.dkr.ecr.ap-south-1.amazonaws.com/brain-tasks-app:latest
-
-  post_build:
-    commands:
-      - echo "🚀 Deploying to EKS..."
- 
